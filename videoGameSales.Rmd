@@ -1,0 +1,208 @@
+---
+title: "Video Game Sales"
+author: "Taylor de Oliveira Antes - 207114"
+date: "November 2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This is an R Markdown document created for the discipline of Scientific Methodology and Performance Evaluation for Computer Scientists, Porto Alegre, October 2020.
+
+This work will present a data visualization of the dataset vgsales.cls from https://www.kaggle.com/kedokedokedo/vgsales. The packages "knitr" and "ggplot2" are used.
+
+We start by presenting the summary and the structure of the dataset:
+
+```{r, echo=FALSE}
+#Packages 
+#For kable
+library(knitr) 
+#For ggplot
+library("ggplot2")
+
+#Loading Data
+myCsv <- read.csv("vgsales.csv")
+
+#Showing resumes
+summary(myCsv)
+str(myCsv)
+
+```
+
+As shown, the file has 16598 rows/games with 11 columns/variables. 
+
+The 11 variables are the following:
+
+```{r, echo=FALSE}
+# Get the columns names of the dataset
+names <- names(myCsv)
+names
+```
+
+We will focus our analysis on the following variables:
+
+- Platform
+
+- Year
+
+- Genre
+
+- Global_Sales
+
+## Most and Least Sold Games
+
+The 5 games which were sold the most:
+
+```{r, echo=FALSE}
+#Focus: numbers represent the columns we will focus - Name, Platform, Year, Genre, Global_Sales
+focus <- c(2,3,4,5,11)
+
+#Heads: present the first 5 games in the dataset
+heads <- head(myCsv, 5)
+kable(heads[focus], row.names = FALSE)
+```
+
+And the 5 which were sold the least:
+
+```{r, echo=FALSE}
+#Tails: Present the last 5
+tails <- tail(myCsv, 5)
+kable(tails[focus], row.names = FALSE)
+```
+
+
+## Platform Analysis
+
+Analysing the Global_Sales vs Platform data:
+
+```{r, echo=FALSE}
+#Barplot Global_Sales vs Platform, stat="identity" sums the values occurrences, the theme its to angle the names in the plot
+ggplot(myCsv, aes(Platform, Global_Sales)) + geom_bar(stat="identity", width=.5, fill="tomato3") + theme(axis.text.x = element_text(angle=65, vjust=0.6))
+```
+
+We can see that the platforms with more sales are:
+
+```{r, echo=FALSE}
+#Count global Sales per platform
+platGlobalSales <- c( sum(myCsv[which(myCsv$Platform == "PS2"), "Global_Sales"]),
+                      sum(myCsv[which(myCsv$Platform == "X360"), "Global_Sales"]),
+                      sum(myCsv[which(myCsv$Platform == "PS3"), "Global_Sales"]),
+                      sum(myCsv[which(myCsv$Platform == "Wii"), "Global_Sales"]),
+                      sum(myCsv[which(myCsv$Platform == "DS"), "Global_Sales"])
+                    )
+
+#Count number of games per platform
+platNumberOGames <- c( sum(myCsv$Platform == "PS2"), sum(myCsv$Platform == "X360"), sum(myCsv$Platform == "PS3"), sum(myCsv$Platform == "Wii"), sum(myCsv$Platform == "DS"))
+
+platSalesPerGames <- platGlobalSales / platNumberOGames
+
+#Creating dataset to print
+platform5 <- data.frame("Platform" = c("PS2", "X360", "PS3", "Wii", "DS"),
+                        "Global_Sales" = platGlobalSales,
+                        "Number_of_Games" = platNumberOGames,
+                        "Sales_per_Game" = platSalesPerGames
+                        )
+#Printing
+kable(platform5, align = "lc")
+```
+
+Which is a interesting result, as one would believe that the platform with more sales would be Wii ( because 3 of the top 5 games sold were from the Wii).
+
+
+## Year Analysis
+
+Analysing the Global_Sales vs Year data:
+
+```{r, echo=FALSE}
+#Barplot Global Sales vs Year
+ggplot(myCsv, aes(Year, Global_Sales)) + geom_bar(stat="identity", width=.5, fill="steelblue3") + theme(axis.text.x = element_text(angle=65, vjust=0.6))
+```
+
+We can see that the years with more sales are:
+
+```{r, echo=FALSE}
+yearGlobalSales <- c( sum(myCsv[which(myCsv$Year == "2008"), "Global_Sales"]),
+                      sum(myCsv[which(myCsv$Year == "2009"), "Global_Sales"]),
+                      sum(myCsv[which(myCsv$Year == "2007"), "Global_Sales"]),
+                      sum(myCsv[which(myCsv$Year == "2010"), "Global_Sales"]),
+                      sum(myCsv[which(myCsv$Year == "2006"), "Global_Sales"])
+                      )
+
+yearNumberOGames <- c( sum(myCsv$Year == "2008"), sum(myCsv$Year == "2009"), sum(myCsv$Year == "2007"), sum(myCsv$Year == "2010"), sum(myCsv$Year == "2006"))
+
+year5 <- data.frame("Year" = c("2008", "2009", "2007", "2010", "2006"),
+                        "Global_Sales" = yearGlobalSales,
+                        "Number_of_Games" = yearNumberOGames
+                        )
+
+kable(year5, align = "lc")
+```
+
+This data is related to the platform as well:
+
+```{r, echo=FALSE}
+ggplot(myCsv, aes(Year, Global_Sales)) + geom_bar(stat="identity", width=.5, aes(fill=Platform)) + theme(axis.text.x = element_text(angle=65, vjust=0.6))
+```
+
+We can see that the increase in the sales from to 2006 to 2010 are distributed pretty even between the platforms with most sales.
+
+
+## Genre Analysis
+
+Analysing the Global_Sales vs Genre data:
+
+```{r, echo=FALSE}
+ggplot(myCsv, aes(Genre, Global_Sales)) + geom_bar(stat="identity", width=.5, fill="palegreen3") + theme(axis.text.x = element_text(angle=65, vjust=0.6))
+
+#Pie Chart, takes time to compile
+#ggplot(myCsv, aes(x="", y=Global_Sales, fill=Genre))+ geom_bar(width = 1, stat = "identity") + coord_polar("y", start=0) + scale_fill_brewer(palette="Blues") + theme_minimal()
+
+```
+
+The genres which sold the most were:
+
+```{r, echo=FALSE}
+genreGlobalSales <- c( sum(myCsv[which(myCsv$Genre == "Action"), "Global_Sales"]),
+                      sum(myCsv[which(myCsv$Genre == "Sports"), "Global_Sales"]),
+                      sum(myCsv[which(myCsv$Genre == "Shooter"), "Global_Sales"]),
+                      sum(myCsv[which(myCsv$Genre == "Role-Playing"), "Global_Sales"]),
+                      sum(myCsv[which(myCsv$Genre == "Platform"), "Global_Sales"])
+                      )
+
+genreNumberOGames <- c( sum(myCsv$Genre == "Action"), sum(myCsv$Genre == "Sports"), sum(myCsv$Genre == "Shooter"), sum(myCsv$Genre == "Role-Playing"), sum(myCsv$Genre == "Platform"))
+
+genre5 <- data.frame("Genre" = c("Action", "Sports", "Shooter", "Role-Playing", "Platform"),
+                        "Global_Sales" = genreGlobalSales,
+                        "Number_of_Games" = genreNumberOGames
+                        )
+
+kable(genre5, align = "lc")
+```
+
+Analysing the Global_Sales vs Genre per Platform:
+
+```{r, echo=FALSE}
+#Facet_Wrap show mini Global Sales vs Genre graphs for each platform
+ggplot(myCsv, aes(Genre, Global_Sales)) + geom_bar(stat="identity", width=.5, fill="palegreen3") + theme(axis.text.x = element_text(angle=65, vjust=0.6)) + facet_wrap(~Platform)
+```
+
+The genres with more sales by platform are:
+
+- PS2: Action, Sports
+
+- X360: Shooter, Action
+
+- PS3: Action, Shooter
+
+- Wii: Sports, Misc
+
+- DS: Simulation, Role-Playing
+
+
+
